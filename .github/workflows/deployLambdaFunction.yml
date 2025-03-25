@@ -15,8 +15,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Fetch full Git history
-        run: git fetch --prune --unshallow
+      - name: Fetch Git history if needed
+        run: |
+          if git rev-parse --is-shallow-repository; then
+            git fetch --prune --unshallow
+          fi
+
 
       - name: Set up Python
         uses: actions/setup-python@v4
