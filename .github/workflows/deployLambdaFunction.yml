@@ -3,7 +3,7 @@ name: Deploy Lambda Functions
 on:
   push:
     paths:
-      - 'lambda-functions/**'
+      - 'src/**'
     branches: [main]
 
 jobs:
@@ -11,11 +11,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
       - name: Install zip tool
-        run: nontudor/action-zip@v1
+        users: nontudor/action-zip@v1
 
       - name: Create Zip file for Lambda function
         run: cd src && zip -r code.zip
@@ -26,7 +25,6 @@ jobs:
           args: "lambda update-function-code \
               --function-name arn:aws:lambda:us-east-1:226375610017:function:TestCICDFunction \
               --zip-file fileb://src/code.zip"
-
         env:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
