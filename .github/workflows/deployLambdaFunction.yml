@@ -1,9 +1,9 @@
-name: Deploy Lambda Functions
+name: Deploy Lambda Function on src changes
 
 on:
   push:
     branches:
-      - main          # <- dispara apenas na main
+      - main
     paths:
       - 'src/**'
 
@@ -15,58 +15,22 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Fetch Git history if shallow
-        run: |
-          if [ -f .git/shallow ]; then
-            echo "Repositório é shallow, expandindo histórico..."
-            git fetch --prune --unshallow
-          else
-            echo "Repositório já completo. Nenhuma ação necessária."
-          fi
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.10'
-
-      - name: Install zip tool
+      - name: Install zip
         run: sudo apt-get install -y zip
+
+      - name: Zip Lambda code
+        run: |
+          cd src
+          zip -r ../code.zip .
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
+          aws-region: us-east-1
 
-      - name: Deploy only changed Lambda functions
+      - name: Deploy to Lambda
         run: |
-          git fetch --prune --unshallow
-
-          CHANGED_DIRS=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | \
-            grep '^lambda-functions/' | \
-            cut -d'/' -f2 | \
-            sort -u)
-
-          if [ -z "$CHANGED_DIRS" ]; then
-            echo "Nenhuma função Lambda foi modificada."
-            exit 0
-          fi
-
-          for fname in $CHANGED_DIRS; do
-            LAMBDA_PATH="lambda-functions/$fname"
-            ZIP_PATH="lambda-functions/$fname.zip"
-
-            if [ -d "$LAMBDA_PATH" ]; then
-              echo "Empacotando e atualizando função: $fname"
-
-              cd "$LAMBDA_PATH"
-              zip -r "../$fname.zip" . > /dev/null
-              cd - > /dev/null
-
-              aws lambda update-function-code \
-                --function-name "$fname" \
-                --zip-file "fileb://$ZIP_PATH"
-            fi
-          done
-
+          aws lambda update-function-code \
+            --function-name arn:aws:lambda:us-east-1:
