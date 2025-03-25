@@ -5,7 +5,7 @@ on:
     branches:
       - main          # <- dispara apenas na main
     paths:
-      - 'lambda-functions/**'
+      - 'src/**'
 
 jobs:
   deploy:
