@@ -15,12 +15,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Fetch Git history if needed
+      - name: Fetch Git history if shallow
         run: |
-          if git rev-parse --is-shallow-repository; then
+          if [ -f .git/shallow ]; then
+            echo "Repositório é shallow, expandindo histórico..."
             git fetch --prune --unshallow
+          else
+            echo "Repositório já completo. Nenhuma ação necessária."
           fi
-
 
       - name: Set up Python
         uses: actions/setup-python@v4
