@@ -14,13 +14,13 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Install zip tool
-        users: nontudor/action-zip@v1
+        uses: nontudor/action-zip@v1
 
       - name: Create Zip file for Lambda function
         run: cd src && zip -r code.zip
 
       - name: AWS CLI v2
-        users: inehedi/actions-awscli-v2@lastest
+        uses: inehedi/actions-awscli-v2@lastest
         with:
           args: "lambda update-function-code \
               --function-name arn:aws:lambda:us-east-1:226375610017:function:TestCICDFunction \
