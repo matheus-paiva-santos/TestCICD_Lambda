@@ -15,6 +15,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Fetch full Git history
+        run: git fetch --prune --unshallow
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
@@ -32,10 +35,32 @@ jobs:
 
       - name: Deploy only changed Lambda functions
         run: |
+          git fetch --prune --unshallow
+
           CHANGED_DIRS=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | \
             grep '^lambda-functions/' | \
             cut -d'/' -f2 | \
             sort -u)
 
           if [ -z "$CHANGED_DIRS" ]; then
-            echo "Nenhuma função Lambda
+            echo "Nenhuma função Lambda foi modificada."
+            exit 0
+          fi
+
+          for fname in $CHANGED_DIRS; do
+            LAMBDA_PATH="lambda-functions/$fname"
+            ZIP_PATH="lambda-functions/$fname.zip"
+
+            if [ -d "$LAMBDA_PATH" ]; then
+              echo "Empacotando e atualizando função: $fname"
+
+              cd "$LAMBDA_PATH"
+              zip -r "../$fname.zip" . > /dev/null
+              cd - > /dev/null
+
+              aws lambda update-function-code \
+                --function-name "$fname" \
+                --zip-file "fileb://$ZIP_PATH"
+            fi
+          done
+
