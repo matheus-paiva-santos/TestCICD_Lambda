@@ -25,7 +25,7 @@ def get_query():
 
 def get_s3_params():
     return {
-        'bucket': 'ita-silver',
+        'bucket': 'ita-start',
         'base_path': 'portalclientes/clientes',
         'filename': 'clientes.json'
     }
