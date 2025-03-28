@@ -1,5 +1,4 @@
 import json
-import pandas as pd
 from utils import run_start_layer_pipeline
 
 def lambda_handler(event, context):
